@@ -1,50 +1,60 @@
-from google import genai
+import google.generativeai as genai
+import base64
 
-
-client = genai.Client(api_key="AIzaSyBO2JczYYN9BzMb8y-BiqMpF6QlZOdaZyg")
-
-
-
+# Your AIza key works with THIS library
+genai.configure(api_key="AIzaSyBCS3hWbjJ0eErHLoPCBX6jZoyqB0Yi8Tg")
 
 def analyze_chart(image_path, user_message):
+    # Load image as bytes
     with open(image_path, "rb") as f:
         img_bytes = f.read()
-        img_b64 = base64.b64encode(img_bytes).decode()
 
     strategy = """
 MY STRATEGY RULES:
 
 1. First determine if the market is in an uptrend.
-2. Look for a LOWER HIGH and a HIGHER LOW.
-3. Check if price breaks ABOVE the lower high.
-4. Volume should DECREASE during pullback and INCREASE on breakout.
-5. If all conditions align → bullish continuation setup.
+   - An uptrend means price is generally moving upward with higher highs and higher lows.
+
+2. Look for a temporary pullback inside the uptrend.
+   - During this pullback, price should form:
+     • a LOWER HIGH (LH)
+     • a HIGHER LOW (HL)
+
+3. After the LH + HL structure forms, check if price breaks ABOVE the lower high.
+   - If price breaks above the LH, this signals continuation of the uptrend.
+
+4. Check volume behavior:
+   - Volume should DECREASE during the pullback (LH → HL).
+   - Volume should INCREASE on the breakout candle above the LH.
+
+5. If all conditions align:
+   - The strategy signals a bullish continuation setup.
 """
 
     prompt = f"""
-Analyze the chart using the strategy above.
+Analyze the chart using the strategy below.
 Do NOT predict the future — only apply the rules.
+
+STRATEGY:
+{strategy}
+
 User message: {user_message}
 """
 
-    response = client.models.generate_content(
-        model="gemini-3-flash-preview",
-        contents=[
-            {"text": prompt},
-            {
-                "file_data": {
-                    "mime_type": "image/png",
-                    "data": img_b64
-                }
-            }
+    model = genai.GenerativeModel("gemini-3-flash-preview")
+
+    response = model.generate_content(
+        [
+            prompt,
+            {"mime_type": "image/png", "data": img_bytes}
         ]
     )
 
     print(response.text)
 
 
+# Run it
 analyze_chart(
-    image_path="D:/My Drive/AP Computer Science/Computer Science 3rd Period 2025-2026/AI Stock Predictor/chart.png",
+    image_path="D:/My Drive/AP Computer Science/Computer Science 3rd Period 2025-2026/AI Stock Predictor/Chart 2.png",
     user_message="Analyze this chart using my strategy"
 )
-
