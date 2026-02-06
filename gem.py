@@ -2,7 +2,7 @@ import google.generativeai as genai
 import base64
 
 # Your AIza key works with THIS library
-genai.configure(api_key="AIzaSyBCS3hWbjJ0eErHLoPCBX6jZoyqB0Yi8Tg")
+genai.configure(api_key="AIzaSyBQmGHXe96veojsKvBaWyLTDOqrQ1KjDoY")
 
 def analyze_chart(image_path, user_message):
     # Load image as bytes
@@ -55,6 +55,6 @@ User message: {user_message}
 
 # Run it
 analyze_chart(
-    image_path="D:/My Drive/AP Computer Science/Computer Science 3rd Period 2025-2026/AI Stock Predictor/Chart 2.png",
+    image_path="chart.png",
     user_message="Analyze this chart using my strategy"
 )
