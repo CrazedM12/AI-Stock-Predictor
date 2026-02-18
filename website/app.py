@@ -1,7 +1,7 @@
-import google.generativeai as genai
 from flask import Flask, render_template, request
+from google import genai
 
-genai.configure(api_key="AIzaSyBCS3hWbjJ0eErHLoPCBX6jZoyqB0Yi8Tg")
+client = genai.Client(api_key="AIzaSyBQmGHXe96veojsKvBaWyLTDOqrQ1KjDoY")
 
 app = Flask(__name__)
 
@@ -10,41 +10,36 @@ def index():
     ai_response = None
 
     if request.method == "POST":
-        image_file = request.files["chart"]
+        chart = request.files["chart"]
+        chart_bytes = chart.read()
+
         user_message = request.form["message"]
 
-        img_bytes = image_file.read()
-
         strategy = """
-MY STRATEGY RULES:
+Analyze the chart using this strategy:
 
-1. First determine if the market is in an uptrend.
-2. Look for a LOWER HIGH and a HIGHER LOW.
-3. Check if price breaks ABOVE the lower high.
-4. Volume should DECREASE during pullback and INCREASE on breakout.
-5. If all conditions align → bullish continuation setup.
+1. Identify the trend direction.
+2. Look for a lower high and a higher low.
+3. Confirm a breakout above the lower high.
+4. Volume should decrease during pullback and increase on breakout.
+5. Only describe what the chart shows — do NOT predict the future.
 """
 
-        prompt = f"""
-Analyze the chart using the strategy below.
-Do NOT predict the future — only apply the rules.
+        prompt = f"{strategy}\n\nUser message: {user_message}"
 
-STRATEGY:
-{strategy}
-
-User message: {user_message}
-"""
-
-        model = genai.GenerativeModel("gemini-1.5-flash")
-
-        response = model.generate_content(
-            [
+        # GEMINI‑3 FORMAT (correct for google-genai 1.63.0)
+        result = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            input=[
                 prompt,
-                {"mime_type": "image/png", "data": img_bytes}
+                genai.types.Blob(
+                    mime_type="image/png",
+                    data=chart_bytes
+                )
             ]
         )
 
-        ai_response = response.text
+        ai_response = result.output_text
 
     return render_template("index.html", ai_response=ai_response)
 

@@ -55,6 +55,6 @@ User message: {user_message}
 
 # Run it
 analyze_chart(
-    image_path="chart.png",
+    image_path="Chart 4.png",
     user_message="Analyze this chart using my strategy"
 )
